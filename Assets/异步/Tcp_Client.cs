@@ -15,7 +15,7 @@ using UnityEngine;
 using UnityEngine.UI;
 public class Tcp_Client : MonoBehaviour
 {
-    public Text Text;
+    public Text Text3;
     public Text Text1;
     public Text Text2;
     AsyncTCPClient Tcp_1 = new AsyncTCPClient();
@@ -28,13 +28,13 @@ public class Tcp_Client : MonoBehaviour
     void Start()
     {
         Tcp_1.AsynConnect("127.0.0.1", 8989);
-        // Tcp_2.AsynConnect("127.0.0.1", 8988);
-        // Tcp_3.AsynConnect("127.0.0.1", 8987);
+        Tcp_1.AsynConnect("127.0.0.1", 8988);
+        Tcp_1.AsynConnect("127.0.0.1", 8987);
     }
     private void Update()
     {
-        Text.text = Tcp_1.Sendmsg();
-        // Text1.text = Tcp_2.Sendmsg();
-        // Text2.text = Tcp_3.Sendmsg();
+        Text3.text = Tcp_1.Sendmsg();
+        Text1.text = Tcp_2.Sendmsg();
+        Text2.text = Tcp_3.Sendmsg();
     }
 }

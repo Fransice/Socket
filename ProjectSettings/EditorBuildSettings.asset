@@ -4,4 +4,7 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: "Assets/\u5F02\u6B65/YIbu.unity"
+    guid: e5a9b09131f754942aed7a3cfc288efb

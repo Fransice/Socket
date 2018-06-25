@@ -81,7 +81,6 @@ public class AsyncTCPClient1
     {
         while (true)
         {
-
             byte[] data = new byte[1024];
             try
             {

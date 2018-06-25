@@ -27,92 +27,6 @@ public delegate void ldyReceiveCallBack(string content);
 
 public class LdySocket
 {
-    #region 服务器端
-
-    //声明一个服务器端的套接字
-    Socket serverSocket;
-    //声明一个委托对象
-    ldyReceiveCallBack serverCallBake;
-    //生成一个比特缓存
-    byte[] serverBuffer = new byte[1024];
-    //初始化服务器
-    public void InitServer(ldyReceiveCallBack rcb)
-    {
-        //传入委托对象
-        serverCallBake = rcb;
-        //初始化服务器端的套接字
-        serverSocket = new Socket(AddressFamily.InterNetwork/*IPV4*/, SocketType.Stream/*双向读写流（服务端可以发给客户 客户也可以发服务）*/,
-            ProtocolType.Tcp/*TCP协议*/);
-        //实例一个网络端点  传入地址和端口
-        IPEndPoint serverEP = new IPEndPoint(IPAddress.Any, 23456);
-        //绑定网络端点
-        serverSocket.Bind(serverEP);
-        //设置最大监听数量
-        serverSocket.Listen(10);
-        //异步接受客户端的连接(CallBack)
-        serverSocket.BeginAccept(new System.AsyncCallback(ServerAccept), serverSocket);
-        //发送一个消息 表示服务器已经创建
-        serverCallBake("Server Has Init");
-
-    }
-    //服务器接受
-    void ServerAccept(System.IAsyncResult ar)
-    {
-        //接受结果状态
-        serverSocket = ar.AsyncState as Socket;
-        //接收结果
-        Socket workingSocket = serverSocket.EndAccept(ar);
-
-        workingSocket.BeginReceive(serverBuffer/*消息缓存*/,
-            0/*接受消息的偏移量 就是从第几个开始*/,
-            this.serverBuffer.Length/*设置接受字节数*/,
-            SocketFlags.None/*Socket标志位*/,
-            new System.AsyncCallback(ServerReceive)/*接受回调*/,
-            workingSocket/*最后的状态*/);
-
-        //继续接受客户端的请求
-        workingSocket.BeginAccept(new System.AsyncCallback(ServerAccept), workingSocket);
-
-    }
-
-    void ServerReceive(System.IAsyncResult ar)
-    {
-        //获取正在工作的Socket对象（用来接受数据的 ）
-        Socket workingSocket = ar.AsyncState as Socket;
-        //接受到得数据字节 
-        int byteCount = 0;
-        //接收到的数据字符串
-        string content = "";
-        try
-        {
-            byteCount = workingSocket.EndReceive(ar);
-
-        }
-        catch (SocketException ex)
-        {
-            //如果接受失败 返回详细异常
-            serverCallBake(ex.ToString());
-        }
-        if (byteCount > 0)
-        {
-            //转换byte数组为字符串（支持中文）
-            content = UTF8Encoding.UTF8.GetString(serverBuffer);
-        }
-        //发送接收到的消息
-        serverCallBake(content);
-        //继续接受消息
-        workingSocket.BeginReceive(serverBuffer/*消息缓存*/,
-            0/*接受消息的偏移量 就是从第几个开始*/,
-            this.serverBuffer.Length/*设置接受字节数*/,
-            SocketFlags.None/*Socket标志位*/,
-            new System.AsyncCallback(ServerReceive)/*接受回调*/,
-            workingSocket/*最后的状态*/);
-    }
-
-
-
-    #endregion
-
     #region
 
     //声明客户端的套接字
@@ -160,6 +74,7 @@ public class LdySocket
             int connt = int.Parse(UTF8Encoding.UTF8.GetString(Hand_Json));
             if ((byteCount - 3) <= connt)
             {
+                Debug.Log(clientBuffer);
                 string message = Encoding.UTF8.GetString(clientBuffer, 4, byteCount - 3);
                 Debug.Log(message);
                 ArrayList al_1 = new ArrayList(clientBuffer);
@@ -167,11 +82,6 @@ public class LdySocket
                 clientBuffer = (byte[])al_1.ToArray(typeof(byte));
             }
         }
-        //发送数据
-        // clientReceiveCallBack(content);
-        //接受下一波数据
-        clientSocket.BeginReceive(clientBuffer, 0, this.clientBuffer.Length, SocketFlags.None,
-            new System.AsyncCallback(clientReceive), this.clientSocket);
 
     }
     //数组拆分
@@ -188,6 +98,8 @@ public class LdySocket
             throw new Exception(ex.Message);
         }
     }
+
+
     public void ClientSendMessage(string msg)
     {
         if (msg != "")
@@ -195,9 +107,18 @@ public class LdySocket
             //将要发送的字符串消息转换成BYTE数组
             clientBuffer = UTF8Encoding.UTF8.GetBytes(msg);
         }
-        clientSocket.BeginSend(clientBuffer, 0, this.clientBuffer.Length, SocketFlags.None,
+        try
+        {
+            clientSocket.BeginSend(clientBuffer, 0, this.clientBuffer.Length, SocketFlags.None,
             new System.AsyncCallback(SendMsg),
             this.clientSocket);
+        }
+        catch (System.Exception es)
+        {
+            Debug.Log("断开连接...." + es);
+            Debug.Log("正在重连");
+        }
+
     }
 
     void SendMsg(System.IAsyncResult ar)
