@@ -14,20 +14,19 @@ using System.Collections;
 
 public class ClientSocketDemo : MonoBehaviour
 {
-    
+
     private LdySocket ldysocket;
     private string clientContent;
     private string needSendText = "";
-    public string ip_ip;
-    public int port;
+    LdySocket ldysocket1 = new LdySocket();
+    LdySocket ldysocket2 = new LdySocket();
+    LdySocket ldysocket3 = new LdySocket();
+
     void Awake()
     {
-        ldysocket = new LdySocket();
-        ldysocket.InitClient(ip_ip, port, (string msg) =>
-        {
-            clientContent = msg;
-            print(clientContent);
-        });
+        ldysocket1.InitClient("127.0.0.1", 8989);
+        ldysocket2.InitClient("127.0.0.1", 8988);
+        ldysocket3.InitClient("127.0.0.1", 8987);
     }
 
     void OnGUI()
@@ -37,33 +36,10 @@ public class ClientSocketDemo : MonoBehaviour
         {
             if (needSendText != "")
             {
-                ldysocket.ClientSendMessage(needSendText);
+                ldysocket1.ClientSendMessage(needSendText);
+                ldysocket2.ClientSendMessage(needSendText);
+                ldysocket3.ClientSendMessage(needSendText);
             }
         }
-        GUI.color = Color.red;
-        GUI.Label(new Rect(10, 10, 100, 20), "ping: " + delayTime.ToString() + "ms");
-
-        if (null != ping && ping.isDone)
-        {
-            delayTime = ping.time;
-            ping.DestroyPing();
-            ping = null;
-            Invoke("SendPing", 1.0F);//每秒Ping一次
-        }
-    }
-    public string IP = "192.168.1.100";
-    Ping ping;
-    float delayTime;
-
-    void Start()
-    {
-        SendPing();
-    }
-
-
-
-    void SendPing()
-    {
-        ping = new Ping(IP);
     }
 }

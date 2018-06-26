@@ -31,21 +31,23 @@ public class LdySocket
 
     //声明客户端的套接字
     Socket clientSocket;
+    IPEndPoint clientEP;
     //声明客户端的委托对象
-    ldyReceiveCallBack clientReceiveCallBack;
     //声明客户端的缓存1KB
     byte[] clientBuffer = new byte[1024];
     //1.ip地址 2.端口3.委托对象
-    public void InitClient(string ip, int port, ldyReceiveCallBack rcb)
+    public void InitClient(string ip, int port)
     {
         //接受委托对象
-        clientReceiveCallBack = rcb;
         //实例客户端的Socket 参数（IPV4 ，双向读写流，TCP协议）
-        clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+        clientSocket = new Socket(AddressFamily.InterNetwork,
+            SocketType.Stream, ProtocolType.Tcp);
         //实例化一个客户端的网络端点        IPAddress.Parse (ip)：将IP地址字符串转换为Ip地址实例
-        IPEndPoint clientEP = new IPEndPoint(IPAddress.Parse(ip), port);
+        clientEP = new IPEndPoint(IPAddress.Parse(ip), port);
         //连接服务器
         clientSocket.Connect(clientEP);
+        Debug.Log("端口号是:" + clientEP.Port);
+        Debug.Log("IP是:" + clientEP.Address);
         //第一个是缓存  第二个 是从第几个开始接受 第三个 接受多少个字节  第四个 需不需要特殊的服务 第五个回调函数 第六个当前对象
         clientSocket.BeginReceive(clientBuffer, 0, this.clientBuffer.Length, SocketFlags.None,
             new System.AsyncCallback(clientReceive), this.clientSocket);
@@ -66,23 +68,43 @@ public class LdySocket
         catch (SocketException ex)
         {
             //如果接受消息失败
-            clientReceiveCallBack(ex.ToString());
         }
-        if (byteCount >= 3)
+        if (byteCount > 0)
         {
-            byte[] Hand_Json = SplitArray(clientBuffer, 0, 3);
-            int connt = int.Parse(UTF8Encoding.UTF8.GetString(Hand_Json));
-            if ((byteCount - 3) <= connt)
+            Debug.Log("端口号是:" + clientEP.Port);
+            Debug.Log("IP是:" + clientEP.Address);
+            ClientSendMessage("123123123");
+            try
             {
-                Debug.Log(clientBuffer);
-                string message = Encoding.UTF8.GetString(clientBuffer, 4, byteCount - 3);
-                Debug.Log(message);
-                ArrayList al_1 = new ArrayList(clientBuffer);
-                al_1.RemoveRange(4, connt - 3);
-                clientBuffer = (byte[])al_1.ToArray(typeof(byte));
+                if (byteCount >= 2)
+                {
+                    byte[] Hand_Json = SplitArray(clientBuffer, 0, 2);
+                    int connt = int.Parse(UTF8Encoding.UTF8.GetString(Hand_Json));
+                    Debug.Log(connt);
+                    if ((byteCount - 2) >= connt)
+                    {
+                        Debug.Log(123123123);
+                        string message = Encoding.UTF8.GetString(clientBuffer, 2, byteCount - 2);
+                        Debug.Log("message  " + message);
+                        ArrayList al_1 = new ArrayList(clientBuffer);
+                        al_1.RemoveRange(2, connt - 2);
+                        clientBuffer = (byte[])al_1.ToArray(typeof(byte));
+                    }
+                }
             }
-        }
+            catch (System.Exception ex)
+            {
+                Debug.Log(ex);
+            }
 
+            //转换已经接受到得Byte数据为字符串
+            // content = UTF8Encoding.UTF8.GetString(clientBuffer);
+            // Debug.Log(content);
+        }
+        //发送数据
+        //接受下一波数据
+        clientSocket.BeginReceive(clientBuffer, 0, this.clientBuffer.Length, SocketFlags.None,
+            new System.AsyncCallback(clientReceive), this.clientSocket);
     }
     //数组拆分
     public byte[] SplitArray(byte[] Source, int StartIndex, int EndIndex)
@@ -98,8 +120,7 @@ public class LdySocket
             throw new Exception(ex.Message);
         }
     }
-
-
+    //发送数据
     public void ClientSendMessage(string msg)
     {
         if (msg != "")
@@ -107,20 +128,10 @@ public class LdySocket
             //将要发送的字符串消息转换成BYTE数组
             clientBuffer = UTF8Encoding.UTF8.GetBytes(msg);
         }
-        try
-        {
-            clientSocket.BeginSend(clientBuffer, 0, this.clientBuffer.Length, SocketFlags.None,
+        clientSocket.BeginSend(clientBuffer, 0, this.clientBuffer.Length, SocketFlags.None,
             new System.AsyncCallback(SendMsg),
             this.clientSocket);
-        }
-        catch (System.Exception es)
-        {
-            Debug.Log("断开连接...." + es);
-            Debug.Log("正在重连");
-        }
-
     }
-
     void SendMsg(System.IAsyncResult ar)
     {
         Socket workingSocket = ar.AsyncState as Socket;
