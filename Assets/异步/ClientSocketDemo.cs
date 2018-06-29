@@ -1,4 +1,5 @@
-﻿//
+﻿
+//
 //   █████▒█    ██  ▄████▄   ██ ▄█▀       ██████╗ ██╗   ██╗ ██████╗
 // ▓██   ▒ ██  ▓██▒▒██▀ ▀█   ██▄█▒        ██╔══██╗██║   ██║██╔════╝
 // ▒████ ░▓██  ▒██░▒▓█    ▄ ▓███▄░        ██████╔╝██║   ██║██║  ███╗
@@ -24,9 +25,9 @@ public class ClientSocketDemo : MonoBehaviour
 
     void Awake()
     {
-        ldysocket1.InitClient("127.0.0.1", 8989);
-        ldysocket2.InitClient("127.0.0.1", 8988);
-        ldysocket3.InitClient("127.0.0.1", 8987);
+        ldysocket1.InitClient("127.0.0.1", 8080);
+        // ldysocket2.InitClient("127.0.0.1", 8988);
+        // ldysocket3.InitClient("127.0.0.1", 8987);
     }
 
     void OnGUI()
@@ -37,8 +38,8 @@ public class ClientSocketDemo : MonoBehaviour
             if (needSendText != "")
             {
                 ldysocket1.ClientSendMessage(needSendText);
-                ldysocket2.ClientSendMessage(needSendText);
-                ldysocket3.ClientSendMessage(needSendText);
+                // ldysocket2.ClientSendMessage(needSendText);
+                // ldysocket3.ClientSendMessage(needSendText);
             }
         }
     }

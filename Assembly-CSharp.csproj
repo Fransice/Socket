@@ -53,6 +53,10 @@
   <ItemGroup>
      <Compile Include="Assets\Test\ClientSocketTest.cs" />
      <Compile Include="Assets\Test\test.cs" />
+     <Compile Include="Assets\UDP\Queue.cs" />
+     <Compile Include="Assets\UDP\QueueExample.cs" />
+     <Compile Include="Assets\UDP\UDPClient.cs" />
+     <Compile Include="Assets\UDP\UDPServer.cs" />
      <Compile Include="Assets\同步\Client.cs" />
      <Compile Include="Assets\同步\Client_Start.cs" />
      <Compile Include="Assets\同步\Client1.cs" />

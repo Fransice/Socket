@@ -24,10 +24,10 @@ using System;
 
 //声明一个委托
 public delegate void ldyReceiveCallBack(string content);
-
 public class LdySocket
 {
     #region
+
 
     //声明客户端的套接字
     Socket clientSocket;
@@ -73,21 +73,34 @@ public class LdySocket
         {
             Debug.Log("端口号是:" + clientEP.Port);
             Debug.Log("IP是:" + clientEP.Address);
-            ClientSendMessage("123123123");
+            // if (byteCount <= 4) return;
+            // int count = BitConverter.ToInt32(clientBuffer, 0);
+            // if (byteCount - 4 >= count)//判断一下数据是否足够
+            // {
+            //     string str = Encoding.UTF8.GetString(clientBuffer, 4, count);
+            //     Console.WriteLine(str);
+            //     // 更新startIndex
+            //     Array.Copy(clientBuffer, count + 4, clientBuffer, 0, byteCount - 4 - count);
+            //     byteCount -= (count + 4);
+            // }
+            // else
+            // {
+            //     // break;
+            // }
             try
             {
-                if (byteCount >= 2)
+                if (byteCount >= 4)
                 {
-                    byte[] Hand_Json = SplitArray(clientBuffer, 0, 2);
+                    byte[] Hand_Json = SplitArray(clientBuffer, 0, 4);
                     int connt = int.Parse(UTF8Encoding.UTF8.GetString(Hand_Json));
                     Debug.Log(connt);
-                    if ((byteCount - 2) >= connt)
+                    if ((byteCount - 4) >= connt)
                     {
-                        Debug.Log(123123123);
-                        string message = Encoding.UTF8.GetString(clientBuffer, 2, byteCount - 2);
+                        string message = Encoding.UTF8.GetString(clientBuffer, 4, byteCount - 4);
+                        QueueExample.instance.InsetTime(message);
                         Debug.Log("message  " + message);
                         ArrayList al_1 = new ArrayList(clientBuffer);
-                        al_1.RemoveRange(2, connt - 2);
+                        al_1.RemoveRange(4, connt - 4);
                         clientBuffer = (byte[])al_1.ToArray(typeof(byte));
                     }
                 }
